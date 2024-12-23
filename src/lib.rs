@@ -8,6 +8,7 @@ use drillx_2;
 use log::Level;
 use console_log;
 use web_sys::js_sys::Date;
+use serde::{Deserialize, Serialize};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -15,16 +16,18 @@ use web_sys::js_sys::Date;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[wasm_bindgen]
+#[derive(Serialize, Deserialize)]
 pub struct MiningResult {
     pub best_nonce: u64,
     pub best_difficulty: u32,
+    pub best_d: [u8; 16],
     pub total_hashes: u64,
 }
 
+// data handling https://rustwasm.github.io/docs/wasm-bindgen/reference/arbitrary-data-with-serde.html
 #[wasm_bindgen]
 #[target_feature(enable = "simd128")]
-pub fn start_mining(challenge: &[u8], nonce_range_start: u64, nonce_range_end: u64, cutoff: f64) -> MiningResult {
+pub fn start_mining(challenge: &[u8], nonce_range_start: u64, nonce_range_end: u64, cutoff: f64) -> JsValue {
     console_log::init_with_level(Level::Debug).expect("error initializing log");
     //log::debug!("Inside the start_mining function...");
     //log::debug!("Setting everything up...");
@@ -36,6 +39,7 @@ pub fn start_mining(challenge: &[u8], nonce_range_start: u64, nonce_range_end: u
     //log::debug!("Step 3...");
     let mut total_hashes: u64 = 0;
     //log::debug!("Step 4...");
+    let mut best_d:  [u8; 16] = [0; 16];
 
     let hash_timer = Date::now();
     //log::debug!("Step 5...");
@@ -56,6 +60,7 @@ pub fn start_mining(challenge: &[u8], nonce_range_start: u64, nonce_range_end: u
             if difficulty > best_difficulty {
                 best_nonce = nonce;
                 best_difficulty = difficulty;
+                best_d = hx.d;
             }
         }
 
@@ -72,9 +77,10 @@ pub fn start_mining(challenge: &[u8], nonce_range_start: u64, nonce_range_end: u
     }
 
     // Return the best nonce and the total hashes calculated
-    MiningResult {
+    serde_wasm_bindgen::to_value(&MiningResult {
         best_nonce,
         best_difficulty,
+        best_d,
         total_hashes,
-    }
+    }).unwrap()
 }

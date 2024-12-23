@@ -15,6 +15,8 @@ wasm-bindgen = "0.2.99"
 web-sys = { version = "0.3.76", features = ["Window", "Performance"] }
 drillx_2 = "1.1.0"
 console_log = "1.0.0"
+js-sys = "0.3.76"
+serde-wasm-bindgen = "0.6.5"
 
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
@@ -30,6 +32,7 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 # Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
 wee_alloc = { version = "0.4.5", optional = true }
 log = "0.4.22"
+serde = { version = "1.0.216", features = ["derive"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"
